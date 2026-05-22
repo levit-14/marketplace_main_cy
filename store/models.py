@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db.models import F, Sum
 
 # =========================
 # 👤 Usuario
@@ -72,6 +73,11 @@ class Cart(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def total(self):
+        """Calcula el costo total del carrito sumando el subtotal de cada ítem."""
+        return sum(item.subtotal for item in self.cartitem_set.all())
+
     def __str__(self):
         return f"Cart {self.id} - {self.user}"
 
@@ -89,6 +95,11 @@ class CartItem(models.Model):
 
     class Meta:
         unique_together = ('cart', 'product')
+
+    @property
+    def subtotal(self):
+        """Calcula el subtotal multiplicando el precio del producto por la cantidad."""
+        return self.product.price * self.quantity
 
     def __str__(self):
         return f"{self.product} x {self.quantity}"
